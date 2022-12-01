@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SeriesFormRequest;
-use App\Events\SeriesCreated;
+use App\Events\SeriesCreated as SeriesCreatedEvent;
+use App\Events\SeriesDestroyed;
 use App\Models\Series;
 use App\Repositories\SeriesRepository;
 use Illuminate\Http\Request;
@@ -31,14 +32,17 @@ class SeriesController extends Controller
 
     public function store(SeriesFormRequest $request)
     {
-        $coverPath = $request->file('cover')->store('series_cover', 'public');
+        $coverPath = $request->hasFile('cover') ? $request->file('cover')->store('series_cover', 'public') :
+            'series_cover/no_cover.jpg';
+
         $request->coverPath = $coverPath;
         $serie = $this->repository->add($request);
-        SeriesCreated::dispatch(
+        SeriesCreatedEvent::dispatch(
             $serie->nome,
             $serie->id,
             $request->seasonsQty,
             $request->episodesPerSeason,
+            $request->coverPath,
         );
 
         return to_route('series.index')
@@ -47,6 +51,11 @@ class SeriesController extends Controller
 
     public function destroy(Series $series)
     {
+
+        SeriesDestroyed::dispatch(
+            $series->cover,
+        );
+
         $series->delete();
 
         return to_route('series.index')
