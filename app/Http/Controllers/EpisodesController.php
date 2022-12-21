@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Episode;
 use App\Models\Season;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EpisodesController
 {
@@ -18,9 +19,16 @@ class EpisodesController
 
     public function update(Request $request, Season $season)
     {
+        // $watchedEpisodes = $request->episodes;
+        // $season->episodes->each(function (Episode $episode) use ($watchedEpisodes) {
+        //     $episode->watched = in_array($episode->id, $watchedEpisodes);
+        // });
+
         $watchedEpisodes = $request->episodes;
-        $season->episodes->each(function (Episode $episode) use ($watchedEpisodes) {
-            $episode->watched = in_array($episode->id, $watchedEpisodes);
+
+        DB::transaction(function () use ($watchedEpisodes) {
+            DB::table('episodes')->whereIn('id', $watchedEpisodes)->update(['watched' => true]);
+            DB::table('episodes')->whereNotIn('id', $watchedEpisodes)->update(['watched' => false]);
         });
 
         $season->push();
