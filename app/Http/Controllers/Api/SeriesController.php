@@ -17,11 +17,13 @@ class SeriesController extends Controller
 
     public function index(Request $request)
     {
-        if (!$request->has('nome')) {
-            return Series::all();
+        $query = Series::query();
+
+        if ($request->has('nome')) {
+            $query->where('nome', $request->nome);
         }
 
-        return Series::whereNome($request->nome)->get();
+        return $query->paginate(5);
     }
 
     public function store(SeriesFormRequest $request)
