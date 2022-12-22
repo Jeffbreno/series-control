@@ -17,7 +17,7 @@ class SeriesDestroyed
      * @return void
      */
     public function __construct(
-        public readonly string $cover,
+        public string $cover,
     ) {
         //
     }

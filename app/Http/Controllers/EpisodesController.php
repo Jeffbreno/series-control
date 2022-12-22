@@ -26,9 +26,9 @@ class EpisodesController
 
         $watchedEpisodes = $request->episodes;
 
-        DB::transaction(function () use ($watchedEpisodes) {
-            DB::table('episodes')->whereIn('id', $watchedEpisodes)->update(['watched' => true]);
-            DB::table('episodes')->whereNotIn('id', $watchedEpisodes)->update(['watched' => false]);
+        DB::transaction(function () use ($watchedEpisodes, $season) {
+            DB::table('episodes')->where('season_id', $season->id)->whereIn('id', $watchedEpisodes)->update(['watched' => true]);
+            DB::table('episodes')->where('season_id', $season->id)->whereNotIn('id', $watchedEpisodes)->update(['watched' => false]);
         });
 
         $season->push();
